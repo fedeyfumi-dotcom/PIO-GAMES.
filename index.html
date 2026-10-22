@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Have a Bird 2 Wiki</title>
+    <!-- Librerías de Three.js para renderizar modelos 3D y fondos 360 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Estilo Antiguo / Wiki -->
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --link-color: #0645ad;
+            --border-color: #a2a9b1;
+            --box-bg: #f8f9fa;
+            --hover-bg: #eaecf0;
+        }
+
+        body {
+            font-family: sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ffffff;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            font-weight: normal;
+        }
+
+        .user-info {
+            font-size: 0.9rem;
+            color: #54595d;
+        }
+
+        .container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        sidebar {
+            width: 270px;
+            border-right: 1px solid var(--border-color);
+            padding: 20px 15px;
+            background-color: #f6f6f6;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .sidebar-top {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-bottom {
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        sidebar h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #54595d;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+            margin-top: 15px;
+        }
+
+        sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 15px 0;
+            min-height: 20px;
+        }
+
+        sidebar li {
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            border: 1px solid transparent;
+            padding: 2px 4px;
+            cursor: grab;
+        }
+
+        sidebar li:active {
+            cursor: grabbing;
+        }
+
+        sidebar li.drag-over {
+            border: 1px dashed var(--link-color);
+            background: #eaf3ff;
+        }
+
+        sidebar a {
+            color: var(--link-color);
+            text-decoration: none;
+            cursor: pointer;
+            display: block;
+            padding: 3px 6px;
+            flex-grow: 1;
+        }
+
+        sidebar a:hover {
+            text-decoration: underline;
+        }
+
+        main {
+            flex-grow: 1;
+            padding: 30px;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        .section-content {
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 0;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .auth-container {
+            width: 350px;
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            background-color: var(--box-bg);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+            background: #fff;
+        }
+
+        button {
+            background-color: #f8f9fa;
+            border: 1px solid #72777d;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        button:hover {
+            background-color: var(--hover-bg);
+        }
+
+        button.primary {
+            background-color: #36c;
+            color: white;
+            border-color: #36c;
+        }
+
+        button.primary:hover {
+            background-color: #2a4b8d;
+        }
+
+        button.danger {
+            color: #ba0000;
+            border-color: #ba0000;
+        }
+
+        button.danger:hover {
+            background-color: #fdf2f2;
+        }
+
+        .search-box {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex-grow: 1;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .rarity-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: var(--box-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .rarity-filter-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            background: #fff;
+            padding: 4px 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .rarity-category-group {
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+        }
+        .rarity-category-header {
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            color: #ffffff !important;
+        }
+        .rarity-category-body {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            background: #fafafa;
+        }
+        .rarity-category-body.collapsed {
+            display: none;
+        }
+
+        .post-card {
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            margin-bottom: 15px;
+            background: #fff;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .post-left {
+            flex-grow: 1;
+        }
+
+        .post-right {
+            width: 280px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .media-container {
+            width: 100%;
+            height: 200px;
+            border: 1px solid var(--border-color);
+            background: #000;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .media-container img, .media-container video, .media-container canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid #72777d;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .fullscreen-btn:hover {
+            background: #fff;
+        }
+
+        .media-container:fullscreen, .media-container:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100vh !important;
+            background: #000;
+        }
+
+        .link-preview-card {
+            border: 1px solid var(--border-color);
+            background: var(--box-bg);
+            padding: 12px;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-decoration: none;
+            color: inherit;
+        }
+        .link-preview-card:hover {
+            background: var(--hover-bg);
+        }
+        .link-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #54595d;
+        }
+        .link-header img {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+        }
+        .link-body {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .link-body img.thumb {
+            width: 80px;
+            height: 50px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .link-title {
+            font-weight: bold;
+            color: var(--link-color);
+            font-size: 0.95rem;
+        }
+
+        .preview-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+            padding: 8px;
+            border: 1px dashed var(--border-color);
+            background: #fff;
+            font-size: 0.85rem;
+        }
+
+        .preview-container img, .preview-container video {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-remove-file {
+            background: #ba0000;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .rarity-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-weight: bold;
+            border-radius: 3px;
+            font-size: 0.9rem;
+            color: #ffffff !important;
+        }
+
+        .rarity-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid var(--border-color);
+            background: #fff;
+            margin-bottom: 5px;
+            cursor: grab;
+        }
+        .rarity-item:active {
+            cursor: grabbing;
+        }
+
+        .admin-controls {
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px dashed var(--border-color);
+            background-color: #fff;
+        }
+
+        .color-picker-popup {
+            position: absolute;
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 15px;
+            z-index: 2000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 320px;
+            display: none;
+            font-size: 0.85rem;
+        }
+        .roblox-palette {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 3px;
+            margin-bottom: 10px;
+        }
+        .roblox-swatch {
+            width: 22px;
+            height: 18px;
+            cursor: pointer;
+            border: 1px solid #444;
+        }
+        .roblox-main-picker {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        #roblox-sv-box {
+            width: 180px;
+            height: 130px;
+            position: relative;
+            cursor: crosshair;
+            background: linear-gradient(to right, #fff, hsl(0, 100%, 50%));
+        }
+        #roblox-sv-overlay {
+            position: absolute;
+            top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(to top, #000, transparent);
+        }
+        #roblox-hue-slider {
+            width: 20px;
+            height: 130px;
+            cursor: pointer;
+            background: linear-gradient(to top, red, yellow, lime, cyan, blue, magenta, red);
+        }
+
+        @keyframes rarityRotateAnim {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        @keyframes rarityFallAnim {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <script type="application/json" id="ai-datastore-reader">
+        { "description": "ESTE BLOQUE ES PARA QUE LA IA LEA EL ESTADO ACTUAL DE LA WIKI" }
+    </script>
+
+    <div id="auth-modal" class="modal-overlay">
+        <div class="auth-container">
+            <h2>Iniciar Sesión / Cuenta</h2>
+            <p style="font-size: 0.85rem; color: #54595d;">Introduce tu usuario. Solo <strong>MrPhoenixWiki</strong> tiene privilegios de administrador.</p>
+            <div class="form-group">
+                <label for="username-input">Usuario:</label>
+                <input type="text" id="username-input" autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label for="password-input">Contraseña:</label>
+                <input type="password" id="password-input" autocomplete="current-password">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="primary" onclick="submitAuthModal()">Acceder</button>
+                <button onclick="closeAuthModal()">Cancelar</button>
+            </div>
+            <p id="auth-error" style="color: red; font-size: 0.85rem; margin-top: 10px;"></p>
+        </div>
+    </div>
+
+    <!-- PANEL FLOTANTE DE COLOR SÓLIDO -->
+    <div id="roblox-color-picker-popup" class="color-picker-popup">
+        <div style="font-weight: bold; margin-bottom: 5px;">Colores básicos</div>
+        <div class="roblox-palette" id="roblox-basic-palette"></div>
+        <div class="roblox-main-picker">
+            <div id="roblox-sv-box"><div id="roblox-sv-overlay"></div><div id="roblox-sv-cursor" style="width:8px;height:8px;border:1px solid #fff;position:absolute;transform:translate(-50%,-50%);pointer-events:none;"></div></div>
+            <div id="roblox-hue-slider"></div>
+        </div>
+        <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 5px;">
+            <button onclick="closeRobloxColorPicker()">Aceptar</button>
+        </div>
+    </div>
+
+    <div id="app-screen">
+        <header>
+            <h1>Have a Bird 2 Wiki</h1>
+            <div class="user-info">
+                Usuario: <strong id="current-user-display"></strong> 
+                <span id="admin-badge" style="color: #0645ad; font-weight: bold; display: none;">(Administrador)</span>
+            </div>
+        </header>
+
+        <div class="container">
+            <sidebar>
+                <div class="sidebar-top" id="sidebar-categories-container"></div>
+                <div class="sidebar-bottom">
+                    <div id="admin-creators" style="display:none; flex-direction:column; gap:8px; margin-bottom: 10px;">
+                        <button class="primary" style="width: 100%;" onclick="openCreateCategoryModal()">+ Crear Categoría</button>
+                        <button class="primary" style="width: 100%;" onclick="openCreateSectionModal()">+ Crear Sección</button>
+                    </div>
+                    <h3 style="margin-top:0;">Sistema</h3>
+                    <ul>
+                        <li><a onclick="openAuthModal()">Iniciar Sesión / Cambiar Cuenta</a></li>
+                        <li><a onclick="logoutAnonymous()" style="color: #ba0000;">Cambiar a Anónimo</a></li>
+                    </ul>
+                </div>
+            </sidebar>
+
+            <main id="main-content-area"></main>
+        </div>
+    </div>
+
+    <script>
+        const defaultData = {
+            users: [],
+            currentUser: null,
+            rarities: [
+                { name: "Común", style: "#717171", strokeColor: "#000000", strokeSize: 1, strokeAlpha: 1, animType: "none", animSpeed: 1, animDir: "clockwise", vecX: 0, vecY: 0, animRepeat: "infinity" },
+                { name: "Rara", style: "#0070dd", strokeColor: "#000000", strokeSize: 1, strokeAlpha: 1, animType: "none", animSpeed: 1, animDir: "clockwise", vecX: 0, vecY: 0, animRepeat: "infinity" },
+                { name: "Épica", style: "#a335ee", strokeColor: "#000000", strokeSize: 1, strokeAlpha: 1, animType: "none", animSpeed: 1, animDir: "clockwise", vecX: 0, vecY: 0, animRepeat: "infinity" },
+                { name: "Legendaria", style: "#ff8000", strokeColor: "#000000", strokeSize: 1, strokeAlpha: 1, animType: "none", animSpeed: 1, animDir: "clockwise", vecX: 0, vecY: 0, animRepeat: "infinity" }
+            ],
+            categories: [
+                { id: "nav", name: "Navegación" },
+                { id: "sys", name: "Sistema" }
+            ],
+            sections: [
+                { id: "como-se-juega", name: "Como se juega", type: "single", catId: "nav" },
+                { id: "pajaros", name: "Pájaros", type: "posts", catId: "nav" },
+                { id: "eventos", name: "Eventos", type: "single", catId: "nav" },
+                { id: "info-juego", name: "Información del juego", type: "single", catId: "nav" },
+                { id: "rarezas", name: "Rarezas", type: "rarities", catId: "sys" }
+            ],
+            posts: {
+                "pajaros": []
+            },
+            singleContent: {
+                "como-se-juega": { title: "Como se juega", text: "Información inicial...", media: null, mediaType: null, bg360: null, linkUrl: "" },
+                "eventos": { title: "Eventos", text: "Próximos eventos del juego...", media: null, mediaType: null, bg360: null, linkUrl: "" },
+                "info-juego": { title: "Información del juego", text: "Detalles sobre el desarrollo...", media: null, mediaType: null, bg360: null, linkUrl: "" }
+            }
+        };
+
+        let activeMediaData = {}; 
+        let threeInstances = {}; 
+        let activeRarityFilters = {}; 
+        let collapsedCategories = {}; 
+        let activeFormState = { type: null, rarity: null, editIndex: -1 };
+
+        function loadDB() {
+            let data = null;
+            // ÚNICA CLAVE GLOBAL UNIFICADA PARA TODAS LAS CUENTAS Y VISITANTES
+            const globalKey = 'have_a_bird_wiki_global_db_v1';
+            const savedGlobal = localStorage.getItem(globalKey);
+
+            if (savedGlobal) {
+                try {
+                    data = JSON.parse(savedGlobal);
+                } catch(e){}
+            }
+
+            // Si no existe la global, intentar migrar de las antiguas por seguridad
+            if (!data) {
+                for (let i = 5; i >= 1; i--) {
+                    const key = i === 5 ? 'have_a_bird_wiki_db_v5' : `have_a_bird_wiki_db_v${i}`;
+                    const saved = localStorage.getItem(key);
+                    if (saved) {
+                        try { data = JSON.parse(saved); break; } catch(e){}
+                    }
+                }
+            }
+
+            if (!data) {
+                data = defaultData;
+            } else {
+                if (!data.categories) data.categories = defaultData.categories;
+                if (!data.sections) data.sections = defaultData.sections;
+                if (!data.posts) data.posts = defaultData.posts;
+                if (!data.singleContent) data.singleContent = defaultData.singleContent;
+                if (!data.rarities) data.rarities = defaultData.rarities;
+                data.rarities.forEach(r => {
+                    if (r.strokeColor === undefined) r.strokeColor = "#000000";
+                    if (r.strokeSize === undefined) r.strokeSize = 1;
+                    if (r.strokeAlpha === undefined) r.strokeAlpha = 1;
+                    if (r.animType === undefined) r.animType = "none";
+                    if (r.animSpeed === undefined) r.animSpeed = 1;
+                    if (r.animDir === undefined) r.animDir = "clockwise";
+                    if (r.vecX === undefined) r.vecX = 0;
+                    if (r.vecY === undefined) r.vecY = 0;
+                    if (r.animRepeat === undefined) r.animRepeat = "infinity";
+                });
+                if (!data.users) data.users = [];
+            }
+
+            let currentUsr = null;
+            const savedUserJson = localStorage.getItem('have_a_bird_active_user');
+            if (savedUserJson) { try { currentUsr = JSON.parse(savedUserJson); } catch(e){} }
+
+            if (!currentUsr) {
+                currentUsr = { username: "Anónimo", password: "", isAdmin: false };
+            }
+            data.currentUser = currentUsr;
+            saveDB(data);
+            return data;
+        }
+
+        function saveDB(data) {
+            try {
+                // GUARDADO GLOBAL ÚNICO
+                localStorage.setItem('have_a_bird_wiki_global_db_v1', JSON.stringify(data));
+                if (data.currentUser) {
+                    localStorage.setItem('have_a_bird_active_user', JSON.stringify(data.currentUser));
+                }
+                const aiReader = document.getElementById('ai-datastore-reader');
+                if (aiReader) aiReader.textContent = JSON.stringify(data, null, 2);
+            } catch (e) {
+                alert('El archivo es demasiado pesado.');
+            }
+        }
+
+        let db = loadDB();
+
+        function openAuthModal() {
+            document.getElementById('auth-modal').style.display = 'flex';
+            if (db.currentUser && db.currentUser.username !== "Anónimo") {
+                document.getElementById('username-input').value = db.currentUser.username;
+            } else {
+                document.getElementById('username-input').value = "";
+            }
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').style.display = 'none';
+            document.getElementById('auth-error').innerText = "";
+        }
+
+        function submitAuthModal() {
+            const userIn = document.getElementById('username-input').value.trim();
+            const passIn = document.getElementById('password-input').value.trim();
+            const errEl = document.getElementById('auth-error');
+
+            if (!userIn) { errEl.innerText = "Introduce un nombre de usuario."; return; }
+
+            const isTargetAdmin = (userIn === "MrPhoenixWiki");
+
+            let user = db.users.find(u => u.username === userIn);
+            if (user) {
+                if (user.password && user.password !== passIn && passIn !== "") {
+                    errEl.innerText = "Contraseña incorrecta.";
+                    return;
+                }
+                user.isAdmin = isTargetAdmin;
+            } else {
+                user = { username: userIn, password: passIn, isAdmin: isTargetAdmin };
+                db.users.push(user);
+            }
+
+            db.currentUser = user;
+            saveDB(db);
+            closeAuthModal();
+            initApp();
+        }
+
+        function logoutAnonymous() {
+            if (confirm("¿Cambiar a modo Anónimo?")) {
+                db.currentUser = { username: "Anónimo", password: "", isAdmin: false };
+                localStorage.setItem('have_a_bird_active_user', JSON.stringify(db.currentUser));
+                initApp();
+            }
+        }
+
+        function initApp() {
+            document.getElementById('current-user-display').innerText = db.currentUser ? db.currentUser.username : "Anónimo";
+            const isAdmin = db.currentUser ? (db.currentUser.username === "MrPhoenixWiki") : false;
+            
+            document.getElementById('admin-badge').style.display = isAdmin ? 'inline' : 'none';
+            document.getElementById('admin-creators').style.display = isAdmin ? 'flex' : 'none';
+
+            const aiReader = document.getElementById('ai-datastore-reader');
+            if (aiReader) aiReader.textContent = JSON.stringify(db, null, 2);
+
+            renderSidebar();
+            if (db.sections.length > 0) switchSection(db.sections[0].id);
+        }
+
+        function renderSidebar() {
+            const container = document.getElementById('sidebar-categories-container');
+            const isAdmin = db.currentUser ? (db.currentUser.username === "MrPhoenixWiki") : false;
+
+            container.innerHTML = db.categories.map(cat => {
+                const catSections = db.sections.filter(s => s.catId === cat.id);
+                let catDeleteBtn = (isAdmin && cat.id !== 'sys' && cat.id !== 'nav') ? `<button class="danger" style="padding:1px 4px; font-size:0.7rem;" onclick="deleteCategory('${cat.id}')">X</button>` : '';
+                return `
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-top: 15px;">
+                        <h3 style="margin:0; border:none; padding:0;">${cat.name}</h3>
+                        ${catDeleteBtn}
+                    </div>
+                    <ul ondragover="allowDrop(event)" ondragleave="removeDropStyle(event)" ondrop="dropSection(event, '${cat.id}')">
+                        ${catSections.map(sec => {
+                            let secDeleteBtn = (isAdmin && sec.id !== 'rarezas') ? `<button class="danger" style="padding: 1px 4px; font-size:0.7rem;" onclick="deleteSection('${sec.id}')">X</button>` : '';
+                            return `
+                                <li draggable="true" ondragstart="dragStart(event, '${sec.id}')">
+                                    <a onclick="switchSection('${sec.id}')">${sec.name}</a>
+                                    ${secDeleteBtn}
+                                </li>
+                            `;
+                        }).join('')}
+                    </ul>
+                `;
+            }).join('');
+        }
+
+        let draggedSectionId = null;
+        function dragStart(event, sectionId) { draggedSectionId = sectionId; event.dataTransfer.setData('text/plain', sectionId); }
+        function allowDrop(event) { event.preventDefault(); event.currentTarget.classList.add('drag-over'); }
+        function removeDropStyle(event) { event.currentTarget.classList.remove('drag-over'); }
+        function dropSection(event, targetCatId) {
+            event.preventDefault(); event.currentTarget.classList.remove('drag-over');
+            if (!draggedSectionId) return;
+            const sec = db.sections.find(s => s.id === draggedSectionId);
+            if (sec) { sec.catId = targetCatId; saveDB(db); renderSidebar(); }
+            draggedSectionId = null;
+        }
+
+        function openCreateCategoryModal() {
+            const name = prompt("Nombre de la nueva categoría:");
+            if (!name) return;
+            const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            if (db.categories.some(c => c.id === id)) { alert("Ya existe."); return; }
+            db.categories.push({ id, name }); saveDB(db); renderSidebar();
+        }
+
+        function deleteCategory(catId) {
+            if (confirm("¿Borrar categoría?")) {
+                db.sections = db.sections.filter(s => s.catId !== catId);
+                db.categories = db.categories.filter(c => c.id !== catId);
+                saveDB(db); renderSidebar();
+                if (db.sections.length > 0) switchSection(db.sections[0].id);
+            }
+        }
+
+        function openCreateSectionModal() {
+            if (db.categories.length === 0) return;
+            const name = prompt("Nombre de la nueva sección:");
+            if (!name) return;
+            let catOptions = db.categories.map(c => `${c.name} (ID: ${c.id})`).join('\n');
+            const catChoice = prompt(`¿A qué categoría pertenece? Escribe el ID exacto:\n\n${catOptions}`);
+            if (!db.categories.some(c => c.id === catChoice)) { alert("No válida."); return; }
+            const typeChoice = prompt("¿Tipo de sección? 'posts' o 'single'").toLowerCase().trim();
+            if (typeChoice !== 'posts' && typeChoice !== 'single') return;
+            const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            db.sections.push({ id, name, type: typeChoice, catId: catChoice });
+            if (typeChoice === 'posts') db.posts[id] = [];
+            else db.singleContent[id] = { title: name, text: "Contenido...", media: null, mediaType: null, bg360: null, linkUrl: "" };
+            saveDB(db); renderSidebar(); switchSection(id);
+        }
+
+        function deleteSection(sectionId) {
+            if (confirm("¿Eliminar sección?")) {
+                db.sections = db.sections.filter(s => s.id !== sectionId);
+                delete db.posts[sectionId]; delete db.singleContent[sectionId];
+                saveDB(db); renderSidebar();
+                if (db.sections.length > 0) switchSection(db.sections[0].id);
+            }
+        }
+
+        function switchSection(sectionId) {
+            const sec = db.sections.find(s => s.id === sectionId);
+            if (!sec) return;
+            const mainArea = document.getElementById('main-content-area');
+            if (sec.type === 'rarities') {
+                mainArea.innerHTML = renderRaritiesSection();
+                renderRaritiesList();
+            } else if (sec.type === 'single') {
+                mainArea.innerHTML = renderSingleSection(sec);
+                renderSingleContent(sec.id);
+            } else if (sec.type === 'posts') {
+                if (sectionId === 'pajaros') {
+                    db.rarities.forEach(r => { if (activeRarityFilters[r.name] === undefined) activeRarityFilters[r.name] = true; });
+                    mainArea.innerHTML = renderPajarosSection();
+                    activeFormState = { type: null, rarity: null, editIndex: -1 };
+                    renderPajaros();
+                } else {
+                    mainArea.innerHTML = renderGenericPostsSection(sec);
+                    renderGenericPosts(sec.id);
+                }
+            }
+        }
+
+        function renderSingleSection(sec) {
+            const isAdmin = db.currentUser ? (db.currentUser.username === "MrPhoenixWiki") : false;
+            let adminForm = isAdmin ? `
+                <div class="admin-controls">
+                    <h3>Editar Contenido de ${sec.name}</h3>
+                    <div class="form-group"><label>Título:</label><input type="text" id="single-title-${sec.id}"></div>
+                    <div class="form-group"><label>Texto / Contenido:</label><textarea id="single-text-${sec.id}" rows="5"></textarea></div>
+                    <div class="form-group"><label>Multimedia:</label><input type="file" id="single-file-${sec.id}" accept="image/*,video/*,.glb,.gltf" onchange="previewFileCustom('${sec.id}')"><div id="single-preview-${sec.id}"></div></div>
+                    <div class="form-group" id="single-bg360-group-${sec.id}" style="display:none;"><label>Fondo 360°:</label><input type="file" id="single-bg360-${sec.id}" accept="image/*" onchange="previewSingleBg360('${sec.id}')"><div id="single-bg360-preview-${sec.id}"></div></div>
+                    <div class="form-group"><label>Enlace Opcional:</label><input type="text" id="single-link-${sec.id}" placeholder="https://..."></div>
+                    <button class="primary" onclick="saveSingleContent('${sec.id}')">Guardar Cambios</button>
+                </div>
+            ` : '';
+
+            return `
+                <section class="section-content active">
+                    <h2>${sec.name}</h2>
+                    <div id="single-display-${sec.id}"></div>
+                    ${adminForm}
+                </section>
+            `;
+        }
+
+        function renderGenericPostsSection(sec) {
+            const isAdmin = db.currentUser ? (db.currentUser.username === "MrPhoenixWiki") : false;
+            let adminForm = isAdmin ? `
+                <div class="admin-controls">
+                    <h3 id="form-title-${sec.id}">Añadir Post en ${sec.name}</h3>
+                    <input type="hidden" id="edit-idx-${sec.id}" value="-1">
+                    <div class="form-group"><label>Título:</label><input type="text" id="post-title-${sec.id}"></div>
+                    <div class="form-group"><label>Contenido:</label><textarea id="post-text-${sec.id}" rows="4"></textarea></div>
+                    <div class="form-group"><label>Multimedia:</label><input type="file" id="post-file-${sec.id}" accept="image/*,video/*,.glb,.gltf" onchange="previewFileCustom('${sec.id}')"><div id="post-preview-${sec.id}"></div></div>
+                    <div class="form-group" id="post-bg360-group-${sec.id}" style="display:none;"><label>Fondo 360°:</label><input type="file" id="post-bg360-${sec.id}" accept="image/*" onchange="previewGenericBg360('${sec.id}')"><div id="post-bg360-preview-${sec.id}"></div></div>
+                    <div class="form-group"><label>Enlace Opcional:</label><input type="text" id="post-link-${sec.id}" placeholder="https://..."></div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="primary" id="btn-submit-${sec.id}" onclick="saveGenericPost('${sec.id}')">Publicar</button>
+                        <button id="btn-cancel-${sec.id}" onclick="cancelGenericEdit('${sec.id}')" style="display:none;">Cancelar</button>
+                    </div>
+                </div>
+            ` : '';
+
+            return `
+                <section class="section-content active">
+                    <h2>${sec.name}</h2>
+                    <div class="search-box"><input type="text" id="search-${sec.id}" placeholder="Buscar..." oninput="renderGenericPosts('${sec.id}')"></div>
+                    <div id="posts-container-${sec.id}"></div>
+                    ${adminForm}
+                </section>
+            `;
+        }
+
+        function renderPajarosSection() {
+            return `
+                <section class="section-content active">
+                    <h2>Pájaros</h2>
+                    <div class="search-box"><input type="text" id="search-pajaros" placeholder="Buscar pájaro por nombre..." oninput="renderPajaros()"></div>
+                    
+                    <div class="rarity-filter-bar">
+                        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                            <strong>Filtrar por Rarezas:</strong>
+                            <div>
+                                <button onclick="setAllRarityFilters(true)">Seleccionar todas</button>
+                                <button onclick="setAllRarityFilters(false)">Deseleccionar todas</button>
+                            </div>
+                        </div>
+                        <div id="rarity-checkboxes-container" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+                    </div>
+
+                    <div id="posts-pajaros"></div>
+                </section>
+            `;
+        }
+
+        // --- MANEJO DE ARCHIVOS MULTIMEDIA ---
+        function previewFileCustom(sectionId) {
+            const fileInputId = sectionId === 'pajaros' ? 'pj-media-file' : (sectionId.startsWith('single-') ? `single-file-${sectionId}` : `post-file-${sectionId}`);
+            const previewAreaId = sectionId === 'pajaros' ? 'pj-preview-area' : (sectionId.startsWith('single-') ? `single-preview-${sectionId}` : `post-preview-${sectionId}`);
+            const bg360GroupId = sectionId === 'pajaros' ? 'pj-bg360-group' : (sectionId.startsWith('single-') ? `single-bg360-group-${sectionId}` : `post-bg360-group-${sectionId}`);
+
+            const fileInput = document.getElementById(fileInputId);
+            const previewArea = document.getElementById(previewAreaId);
+            const bgGroup = document.getElementById(bg360GroupId);
+
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const is3D = file.name.endsWith('.glb') || file.name.endsWith('.gltf');
+                    if (bgGroup) bgGroup.style.display = is3D ? 'block' : 'none';
+
+                    activeMediaData[sectionId] = {
+                        data: e.target.result,
+                        type: is3D ? 'model/gltf-binary' : file.type,
+                        name: file.name
+                    };
+                    renderPreviewBoxCustom(sectionId);
+                };
+                if (file.name.endsWith('.glb')) reader.readAsArrayBuffer(file);
+                else reader.readAsDataURL(file);
+            }
+        }
+
+        function renderPreviewBoxCustom(sectionId) {
+            const previewAreaId = sectionId === 'pajaros' ? 'pj-preview-area' : (sectionId.startsWith('single-') ? `single-preview-${sectionId}` : `post-preview-${sectionId}`);
+            const previewArea = document.getElementById(previewAreaId);
+            const media = activeMediaData[sectionId];
+            if (!media || !media.data) { if(previewArea) previewArea.innerHTML = ''; return; }
+
+            let thumb = media.type && media.type.startsWith('video') ? `<video src="${media.data}"></video>` : 
+                        media.type && media.type.includes('model') ? `<div style="display:flex;align-items:center;justify-content:center;background:#ddd;width:60px;height:60px;font-size:0.7rem;">Modelo 3D</div>` :
+                        `<img src="${media.data}">`;
+
+            if(previewArea) {
+                previewArea.innerHTML = `
+                    <div class="preview-container">
+                        ${thumb}
+                        <div style="flex-grow: 1; word-break: break-all;"><strong>Archivo:</strong> ${media.name}</div>
+                        <button class="btn-remove-file" onclick="removeActiveFileCustom('${sectionId}')">X</button>
+                    </div>
+                `;
+            }
+        }
+
+        function removeActiveFileCustom(sectionId) {
+            activeMediaData[sectionId] = null;
+            const fileInputId = sectionId === 'pajaros' ? 'pj-media-file' : (sectionId.startsWith('single-') ? `single-file-${sectionId}` : `post-file-${sectionId}`);
+            const bg360GroupId = sectionId === 'pajaros' ? 'pj-bg360-group' : (sectionId.startsWith('single-') ? `single-bg360-group-${sectionId}` : `post-bg360-group-${sectionId}`);
+            
+            const input = document.getElementById(fileInputId);
+            if(input) input.value = '';
+            const bg = document.getElementById(bg360GroupId);
+            if(bg) bg.style.display = 'none';
+
+            renderPreviewBoxCustom(sectionId);
+        }
+
+        function previewSingleBg360(sectionId) {
+            const fileInput = document.getElementById(`single-bg360-${sectionId}`);
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (!activeMediaData[sectionId]) activeMediaData[sectionId] = {};
+                    activeMediaData[sectionId].bg360 = e.target.result;
+                    const prev = document.getElementById(`single-bg360-preview-${sectionId}`);
+                    if(prev) prev.innerHTML = `<p style="color:green; font-size:0.8rem;">Fondo 360 cargado: ${file.name}</p>`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function previewGenericBg360(sectionId) {
+            const fileInput = document.getElementById(`post-bg360-${sectionId}`);
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (!activeMediaData[sectionId]) activeMediaData[sectionId] = {};
+                    activeMediaData[sectionId].bg360 = e.target.result;
+                    const prev = document.getElementById(`post-bg360-preview-${sectionId}`);
+                    if(prev) prev.innerHTML = `<p style="color:green; font-size:0.8rem;">Fondo 360 cargado: ${file.name}</p>`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function previewPajaroBg360() {
+            const fileInput = document.getElementById('pj-bg360-file');
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (!activeMediaData['pajaros']) activeMediaData['pajaros'] = {};
+                    activeMediaData['pajaros'].bg360 = e.target.result;
+                    const prev = document.getElementById('pj-bg360-preview-area');
+                    if(prev) prev.innerHTML = `<p style="color:green; font-size:0.8rem;">Fondo 360 cargado: ${file.name}</p>`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // --- SECCIÓN RAREZAS ---
+        let currentEditingRarityIndex = -1;
+        let activeColorInputTarget = null;
+        let currentGradientStops = [{pos: 0, color: '#000000'}, {pos: 1, color: '#ffffff'}];
+        let selectedStopIdx = 0;
+        let draggedRarityIdx = null;
+
+        function renderRaritiesSection() {
+            const isAdmin = db.currentUser ? (db.currentUser.username === "MrPhoenixWiki") : false;
+            let adminForm = isAdmin ? `
+                <div class="admin-controls">
+                    <h3 id="rarity-form-title">Crear / Editar Rareza</h3>
+                    <input type="hidden" id="rz-edit-index" value="-1">
+                    <div class="form-group"><label>Nombre de la Rareza:</label><input type="text" id="rz-name"></div>
+                    
+                    <fieldset style="border: 1px solid var(--border-color); padding: 10px; margin-bottom: 15px;">
+                        <legend style="font-weight: bold; font-size: 0.85rem;">Estilo de Fondo</legend>
+                        <div class="form-group" style="display:flex; gap:10px; margin-bottom:10px;">
+                            <button type="button" id="btn-mode-solid" class="primary" onclick="setRarityMode('solid')">Color Sólido</button>
+                            <button type="button" id="btn-mode-gradient" onclick="setRarityMode('gradient')">Gradiente</button>
+                        </div>
+                        <input type="hidden" id="rz-mode" value="solid">
+
+                        <div id="panel-mode-solid" class="form-group" style="margin-bottom:0;">
+                            <label>Color (Haz clic para abrir panel Roblox Studio):</label>
+                            <input type="text" id="rz-solid-color" readonly style="cursor:pointer;" onclick="openRobloxColorPicker(this, event)">
+                        </div>
+
+                        <div id="panel-mode-gradient" class="form-group" style="display:none; margin-bottom:0;">
+                            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                                <div style="flex:1;"><label>Tipo:</label>
+                                    <select id="rz-grad-type" onchange="updateGradientPreview()">
+                                        <option value="linear">Linear</option>
+                                        <option value="radial">Radial</option>
+                                        <option value="conical">Conical</option>
+                                        <option value="elliptical">Elliptical</option>
+                                    </select>
+                                </div>
+                                <div style="flex:1;"><label>Scale (%):</label><input type="number" id="rz-grad-scale" value="100" oninput="updateGradientPreview()"></div>
+                                <div style="flex:1;"><label>Rotation (°):</label><input type="number" id="rz-grad-rotation" value="0" oninput="updateGradientPreview()"></div>
+                            </div>
+                            <label style="display:flex; justify-content:space-between; align-items:center;">
+                                <span>Rotación con Flecha del Gradiente:</span>
+                                <div id="wheel-grad" style="width:50px; height:50px; border-radius:50%; border:2px solid #333; position:relative; background:#fff; cursor:pointer;" onclick="setGradRotationFromWheel(event)">
+                                    <div id="pointer-grad" style="width:2px; height:25px; background:red; position:absolute; top:25px; left:24px; transform-origin: top center; transform: rotate(0deg);">
+                                        <div style="width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent; border-bottom:8px solid red; position:absolute; top:-8px; left:-3px;"></div>
+                                    </div>
+                                </div>
+                            </label>
+                            <div style="position:relative; height:35px; background:#333; border:1px solid #555; margin:10px 0; cursor:crosshair;" id="gradient-bar-container" onclick="addGradientStop(event)">
+                                <div id="gradient-stops-visual" style="position:absolute; width:100%; height:100%; pointer-events:none;"></div>
+                            </div>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <button type="button" onclick="deleteSelectedStop()">Eliminar Punto</button>
+                                <span>Color del punto: <input type="text" id="rz-stop-color" readonly style="width:70px; display:inline-block; cursor:pointer;" onclick="openRobloxColorPicker(this, event)"></span>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset style="border: 1px solid var(--border-color); padding: 10px; margin-bottom: 15px;">
+                        <legend style="font-weight: bold; font-size: 0.85rem;">Configuración de UI Stroke (Borde)</legend>
+                        <div style="display:flex; gap:10px;">
+                            <div style="flex:1;"><label>Color Borde:</label><input type="text" id="rz-stroke-color" readonly style="cursor:pointer; background:#000000; color:#fff;" onclick="openRobloxColorPicker(this, event)" value="#000000"></div>
+                            <div style="flex:1;"><label>Grosor (px):</label><input type="number" id="rz-stroke-size" value="1" min="0" max="10"></div>
+                            <div style="flex:1;"><label>Transparencia (0-1):</label><input type="number" id="rz-stroke-alpha" value="1" min="0" max="1" step="0.1"></div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset style="border: 1px solid var(--border-color); padding: 10px; margin-bottom: 15px;">
+                        <legend style="font-weight: bold; font-size: 0.85rem;">Animación</legend>
+                        <div class="form-group" style="margin-bottom:10px;">
+                            <label>Tipo:</label>
+                            <div style="display:flex; gap:10px;">
+                                <button type="button" id="btn-anim-none" class="primary" onclick="setAnimType('none')">Ninguna</button>
+                                <button type="button" id="btn-anim-rotation" onclick="setAnimType('rotation')">Rotación</button>
+                                <button type="button" id="btn-anim-fall" onclick="setAnimType('fall')">Caída</button>
+                            </div>
+                            <input type="hidden" id="rz-anim-type" value="none">
+                        </div>
+
+                        <div id="panel-anim-config" class="form-group" style="display:none; background:#f0f0f0; padding:10px; margin-bottom:10px;">
+                            <div id="config-rotation" style="display:none;">
+                                <label>Velocidad:</label><input type="number" id="rz-anim-speed" value="1" step="0.5" style="margin-bottom:10px;">
+                                <label>Sentido:</label>
+                                <select id="rz-anim-dir" style="margin-bottom:10px;">
+                                    <option value="clockwise">Horario</option>
+                                    <option value="counter">Antihorario</option>
+                                </select>
+                                <label>Dirección de Rotación:</label>
+                                <div id="wheel-rot" style="width:60px; height:60px; border-radius:50%; border:2px solid #333; position:relative; background:#fff; cursor:pointer;" onclick="setVectorDirection('rotation', event)">
+                                    <div id="pointer-rot" style="width:2px; height:30px; background:red; position:absolute; top:30px; left:29px; transform-origin: top center; transform: rotate(0deg);">
+                                        <div style="width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent; border-bottom:8px solid red; position:absolute; top:-8px; left:-3px;"></div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="rz-vec-rot" value="0">
+                            </div>
+                            <div id="config-fall" style="display:none;">
+                                <label>Velocidad:</label><input type="number" id="rz-fall-speed" value="1" step="0.5" style="margin-bottom:10px;">
+                                <label>Vector de Caída:</label>
+                                <div id="wheel-fall" style="width:60px; height:60px; border-radius:50%; border:2px solid #333; position:relative; background:#fff; cursor:pointer;" onclick="setVectorDirection('fall', event)">
+                                    <div id="pointer-fall" style="width:2px; height:25px; background:red; position:absolute; top:30px; left:29px; transform-origin: top center; transform: rotate(0deg);">
+                                        <div style="width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent; border-bottom:8px solid red; position:absolute; top:-8px; left:-3px;"></div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="rz-vec-fx" value="0">
+                                <input type="hidden" id="rz-vec-fy" value="1">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Modo de Repetición:</label>
+                            <div style="display:flex; gap:10px;">
+                                <button type="button" id="btn-repeat-infinity" class="primary" onclick="setAnimRepeat('infinity')">Infinity</button>
+                                <button type="button" id="btn-repeat-repeat" onclick="setAnimRepeat('repeat')">Repeat</button>
+                                <button type="button" id="btn-repeat-mirror" onclick="setAnimRepeat('mirror')">Mirror</button>
+                            </div>
+                            <input type="hidden" id="rz-anim-repeat" value="infinity">
+                        </div>
+                    </fieldset>
+
+                    <div style="margin-top:15px; display:flex; gap:10px;">
+                        <button class="primary" onclick="saveRarity()">Guardar Rareza</button>
+                        <button id="rz-cancel-btn" onclick="cancelEditRarity()" style="display:none;">Cancelar Edición</button>
+                    </div>
+                </div>
+            ` : '';
+
+            return `
+                <section class="section-content active">
+                    <h2>Rarezas</h2>
+                    <p>Arrastra las rarezas hacia arriba o abajo para definir su jerarquía y valor (cuanto más abajo, mayor valor):</p>
+                    <div id="rarities-list"></div>
+                    ${adminForm}
+                </section>
+            `;
+        }
+
+        function rDragStart(e, idx) { draggedRarityIdx = idx; e.dataTransfer.setData('text/plain', idx); }
+        function rDragOver(e) { e.preventDefault(); }
+        function rDrop(e, targetIdx) {
+            e.preventDefault();
+            if (draggedRarityIdx === null || draggedRarityIdx === targetIdx) return;
+            const moved = db.rarities.splice(draggedRarityIdx, 1)[0];
+            db.rarities.splice(targetIdx, 0, moved);
+            saveDB(db);
+            renderRaritiesList();
+            draggedRarityIdx = null;
+        }
+
+        function setAnimType(type) {
+            document.getElementById('rz-anim-type').value = type;
+            ['none', 'rotation', 'fall'].forEach(t => {
+                const btn = document.getElementById('btn-anim-' + t);
+                if (btn) btn.classList.remove('primary');
+            });
+            const activeBtn = document.getElementById('btn-anim-' + type);
+            if (activeBtn) activeBtn.classList.add('primary');
+
+            const panel = document.getElementById('panel-anim-config');
+            const rotConfig = document.getElementById('config-rotation');
+            const fallConfig = document.getElementById('config-fall');
+
+            if (type === 'none') {
+                panel.style.display = 'none';
+            } else {
+                panel.style.display = 'block';
+                if (type === 'rotation') {
+                    rotConfig.style.display = 'block';
+                    fallConfig.style.display = 'none';
+                } else {
+                    rotConfig.style.display = 'none';
+                    fallConfig.style.display = 'block';
+                }
+            }
+        }
+
+        function setAnimRepeat(mode) {
+            document.getElementById('rz-anim-repeat').value = mode;
+            ['infinity', 'repeat', 'mirror'].forEach(m => {
+                const btn = document.getElementById('btn-repeat-' + m);
+                if(btn) btn.classList.remove('primary');
+            });
+            const active = document.getElementById('btn-repeat-' + mode);
+            if(active) active.classList.add('primary');
+        }
+
+        function setVectorDirection(target, event) {
+            const rect = event.currentTarget.getBoundingClientRect();
+            const cx = rect.width / 2;
+            const cy = rect.height / 2;
+            const x = event.clientX - rect.left - cx;
+            const y = event.clientY - rect.top - cy;
+            const angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
+
+            if (target === 'rotation') {
+                document.getElementById('rz-vec-rot').value = angle;
+                document.getElementById('pointer-rot').style.transform = `rotate(${angle}deg)`;
+            } else {
+                document.getElementById('rz-vec-fx').value = x / cx;
+                document.getElementById('rz-vec-fy').value = y / cy;
+                document.getElementById('pointer-fall').style.transform = `rotate(${angle}deg)`;
+            }
+        }
+
+        function setGradRotationFromWheel(event) {
+            const rect = event.currentTarget.getBoundingClientRect();
+            const cx = rect.width / 2;
+            const cy = rect.height / 2;
+            const x = event.clientX - rect.left - cx;
+            const y = event.clientY - rect.top - cy;
+            const angle = Math.round(Math.atan2(y, x) * (180 / Math.PI) + 90);
+            document.getElementById('rz-grad-rotation').value = (angle + 360) % 360;
+            document.getElementById('pointer-grad').style.transform = `rotate(${angle}deg)`;
+            updateGradientPreview();
+        }
+
+        function setRarityMode(mode) {
+            document.getElementById('rz-mode').value = mode;
+            if (mode === 'solid') {
+                document.getElementById('btn-mode-solid').classList.add('primary');
+                document.getElementById('btn-mode-gradient').classList.remove('primary');
+                document.getElementById('panel-mode-solid').style.display = 'block';
+                document.getElementById('panel-mode-gradient').style.display = 'none';
+            } else {
+                document.getElementById('btn-mode-gradient').classList.add('primary');
+                document.getElementById('btn-mode-solid').classList.remove('primary');
+                document.getElementById('panel-mode-solid').style.display = 'none';
+                document.getElementById('panel-mode-gradient').style.display = 'block';
+                renderGradientBar();
+            }
+        }
+
+        function renderGradientBar() {
+            const container = document.getElementById('gradient-stops-visual');
+            if (!container) return;
+            let sortedStops = [...currentGradientStops].sort((a,b) => a.pos - b.pos);
+            let cssGrad = sortedStops.map(s => `${s.color} ${s.pos * 100}%`).join(', ');
+            container.parentElement.style.background = `linear-gradient(to right, ${cssGrad})`;
+
+            container.innerHTML = currentGradientStops.map((stop, idx) => `
+                <div style="position:absolute; left:${stop.pos * 100}%; top:0; width:14px; height:100%; transform:translateX(-50%); border:2px solid ${idx === selectedStopIdx ? '#ffff00' : '#fff'}; background:${stop.color}; cursor:ew-resize; pointer-events:auto;" onmousedown="startDragStop(${idx}, event)" onclick="selectGradientStop(${idx}, event)"></div>
+            `).join('');
+
+            if (currentGradientStops[selectedStopIdx]) {
+                document.getElementById('rz-stop-color').value = currentGradientStops[selectedStopIdx].color;
+                document.getElementById('rz-stop-color').style.background = currentGradientStops[selectedStopIdx].color;
+            }
+        }
+
+        let draggingStopIdx = null;
+        function startDragStop(idx, event) {
+            event.stopPropagation();
+            draggingStopIdx = idx;
+            selectedStopIdx = idx;
+            window.onmousemove = onDragStop;
+            window.onmouseup = stopDragStop;
+        }
+        function onDragStop(e) {
+            if (draggingStopIdx === null) return;
+            const container = document.getElementById('gradient-bar-container').getBoundingClientRect();
+            let pos = (e.clientX - container.left) / container.width;
+            pos = Math.max(0, Math.min(1, pos));
+            currentGradientStops[draggingStopIdx].pos = pos;
+            renderGradientBar();
+        }
+        function stopDragStop() {
+            draggingStopIdx = null;
+            window.onmousemove = null;
+            window.onmouseup = null;
+        }
+
+        function selectGradientStop(idx, event) {
+            event.stopPropagation();
+            selectedStopIdx = idx;
+            renderGradientBar();
+        }
+
+        function addGradientStop(event) {
+            if (event.target !== event.currentTarget) return;
+            const rect = event.currentTarget.getBoundingClientRect();
+            const pos = Math.max(0.01, Math.min(0.99, (event.clientX - rect.left) / rect.width));
+            currentGradientStops.push({ pos, color: '#ff0000' });
+            selectedStopIdx = currentGradientStops.length - 1;
+            renderGradientBar();
+        }
+
+        function deleteSelectedStop() {
+            if (selectedStopIdx === 0 || selectedStopIdx === currentGradientStops.length - 1) { alert("No se pueden eliminar los puntos de los extremos (0% y 100%)."); return; }
+            if (currentGradientStops.length <= 2) { alert("Debe haber al menos 2 puntos."); return; }
+            currentGradientStops.splice(selectedStopIdx, 1);
+            selectedStopIdx = 0;
+            renderGradientBar();
+        }
+
+        function updateGradientPreview() {
+            let type = document.getElementById('rz-grad-type').value;
+            let rot = document.getElementById('rz-grad-rotation').value || 0;
+            let sortedStops = [...currentGradientStops].sort((a,b) => a.pos - b.pos);
+            let stopsStr = sortedStops.map(s => `${s.color} ${s.pos * 100}%`).join(', ');
+            
+            let finalCss = '';
+            if (type === 'linear') finalCss = `linear-gradient(${rot}deg, ${stopsStr})`;
+            else if (type === 'radial') finalCss = `radial-gradient(circle, ${stopsStr})`;
+            else if (type === 'conical') finalCss = `conic-gradient(from ${rot}deg at 50% 50%, ${stopsStr})`;
+            else if (type === 'elliptical') finalCss = `radial-gradient(ellipse, ${stopsStr})`;
+
+            if(activeColorInputTarget && activeColorInputTarget.id === 'rz-stop-color') {
+                activeColorInputTarget.value = finalCss;
+            }
+        }
+
+        function initRobloxPickerUI() {
+            const palette = document.getElementById('roblox-basic-palette');
+            if(!palette || palette.children.length > 0) return;
+            const basicColors = ['#000000','#7f7f7f','#880015','#ed1c24','#ff7f27','#ffc90e','#fff200','#efe4b0','#b5e61d','#00e400','#00a2e8','#99d9ea','#3f48cc','#a349a4','#ffffff','#c3c3c3','#b97a57','#ffaec9','#bfe4ff','#70dbdb','#b5ffb5','#ffffb5','#ffc89f'];
+            basicColors.forEach(c => {
+                const swatch = document.createElement('div');
+                swatch.className = 'roblox-swatch';
+                swatch.style.background = c;
+                swatch.onclick = () => { selectRobloxColorHex(c); };
+                palette.appendChild(swatch);
+            });
+
+            const svBox = document.getElementById('roblox-sv-box');
+            svBox.onmousedown = (e) => {
+                trackSV(e);
+                window.onmousemove = trackSV;
+                window.onmouseup = () => { window.onmousemove = null; window.onmouseup = null; };
+            };
+
+            const hueSlider = document.getElementById('roblox-hue-slider');
+            hueSlider.onmousedown = (e) => {
+                trackHue(e);
+                window.onmousemove = trackHue;
+                window.onmouseup = () => { window.onmousemove = null; window.onmouseup = null; };
+            };
+        }
+
+        let currentHue = 0;
+        let currentSat = 100;
+        let currentVal = 100;
+
+        function trackSV(e) {
+            const box = document.getElementById('roblox-sv-box').getBoundingClientRect();
+            let x = Math.max(0, Math.min(box.width, e.clientX - box.left));
+            let y = Math.max(0, Math.min(box.height, e.clientY - box.top));
+            currentSat = (x / box.width) * 100;
+            currentVal = (1 - (y / box.height)) * 100;
+            updateRobloxColorFromHSV();
+        }
+
+        function trackHue(e) {
+            const box = document.getElementById('roblox-hue-slider').getBoundingClientRect();
+            let y = Math.max(0, Math.min(box.height, e.clientY - box.top));
+            currentHue = (y / box.height) * 360;
+            document.getElementById('roblox-sv-box').style.background = `linear-gradient(to right, #fff, hsl(${currentHue}, 100%, 50%))`;
+            updateRobloxColorFromHSV();
+        }
+
+        function updateRobloxColorFromHSV() {
+            let rgb = hsvToRgb(currentHue/360, currentSat/100, currentVal/100);
+            let hex = rgbToHex(rgb[0], rgb[1], rgb[2]);
+            document.getElementById('roblox-sv-cursor').style.left = `${currentSat}%`;
+            document.getElementById('roblox-sv-cursor').style.top = `${100 - currentVal}%`;
+            if(activeColorInputTarget) {
+                activeColorInputTarget.value = hex;
+                activeColorInputTarget.style.background = hex;
+                if(activeColorInputTarget.id === 'rz-stop-color') {
+                    currentGradientStops[selectedStopIdx].color = hex;
+                    renderGradientBar();
+                }
+            }
+        }
+
+        function selectRobloxColorHex(hex) {
+            if(activeColorInputTarget) {
+                activeColorInputTarget.value = hex;
+                activeColorInputTarget.style.background = hex;
+                if(activeColorInputTarget.id === 'rz-stop-color') {
+                    currentGradientStops[selectedStopIdx].color = hex;
+                    renderGradientBar();
+                }
+            }
+        }
+
+        function openRobloxColorPicker(inputEl, event) {
+            event.stopPropagation();
+            activeColorInputTarget = inputEl;
+            initRobloxPickerUI();
+            const popup = document.getElementById('roblox-color-picker-popup');
+            popup.style.display = 'block';
+            popup.style.left = `${Math.min(window.innerWidth - 340, event.pageX)}px`;
+            popup.style.top = `${Math.min(window.innerHeight - 250, event.pageY)}px`;
+        }
+
+        function closeRobloxColorPicker() {
+            document.getElementById('roblox-color-picker-popup').style.display = 'none';
+        }
+
+        function hsvToRgb(h, s, v) {
+            let r, g, b, i, f, p, q, t;
+            i = Math.floor(h * 6); f = h * 6 - i;
+            p = v * (1 - s); q = v * (1 - f * s); t = v * (1 - (1 - f) * s);
+            switch (i % 6) {
+                case 0: r = v, g = t, b = p; break;
+                case 1: r = q, g = v, b = p; break;
+                case 2: r = p, g = v, b = t; break;
+                case 3: r = p, g = q, b = v; break;
+                case 4: r = t, g = p, b = v; break;
+                case 5: r = v, g = p, b = q; break;
+            }
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+
+        function renderRaritiesList() {
+            const container = document.getElementById('rarities-list');
+            const isAdmin = db.currentUser ? (db.currentUser.username === "MrPhoenixWiki") : false;
+
+            if(!container) return;
+            container.innerHTML = db.rarities.map((r, i) => {
+                let size = r.strokeSize || 1;
+                let strokeColor = r.strokeColor || '#000000';
+                let alpha = r.strokeAlpha !== undefined ? r.strokeAlpha : 1;
+                let rgb = hexToRgbStr(strokeColor);
+                
+                let strokeCss = `text-shadow: ${size}px 0 rgba(${rgb}, ${alpha}), -${size}px 0 rgba(${rgb}, ${alpha}), 0 ${size}px rgba(${rgb}, ${alpha}), 0 -${size}px rgba(${rgb}, ${alpha});`;
+                
+                let animStyle = '';
+                if (r.animType === 'rotation') {
+                    let dirVal = r.animDir === 'counter' ? 'reverse' : 'normal';
+                    animStyle = `animation: rarityRotateAnim ${3 / (r.animSpeed || 1)}s linear infinite ${dirVal};`;
+                } else if (r.animType === 'fall') {
+                    let vx = (r.vecX || 0) * 100;
+                    let vy = (r.vecY || 1) * 100;
+                    animStyle = `background-position: ${vx}% ${vy}%; animation: rarityFallAnim ${3 / (r.animSpeed || 1)}s linear infinite; background-size: 200% 200%;`;
+                }
+
+                let adminButtons = isAdmin ? `
+                    <div>
+                        <button onclick="event.stopPropagation(); startEditRarity(${i})">Editar</button>
+                        <button class="danger" onclick="event.stopPropagation(); deleteRarity(${i})">Eliminar</button>
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="rarity-item" draggable="true" ondragstart="rDragStart(event, ${i})" ondragover="rDragOver(event)" ondrop="rDrop(event, ${i})" onclick="startEditRarity(${i})">
+                        <div>
+                            <span class="rarity-badge" style="background: ${r.style}; color: #ffffff !important; ${strokeCss} ${animStyle}">${i+1}. ${r.name}</span>
+                            <span style="font-size: 0.85rem; color: #54595d; margin-left: 10px;">Estilo: <code>${r.style}</code> (Valor: ${i+1})</span>
+                        </div>
+                        ${adminButtons}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function hexToRgbStr(hex) {
+            let c = hex.replace('#','');
+            if(c.length===3) c = c.split('').map(x=>x+x).join('');
+            let num = parseInt(c,16);
+            return `${(num>>16)&255}, ${(num>>8)&255}, ${num&255}`;
+        }
+
+        function saveRarity() {
+            const name = document.getElementById('rz-name').value;
+            const mode = document.getElementById('rz-mode').value;
+            const strokeColor = document.getElementById('rz-stroke-color').value;
+            const strokeSize = parseFloat(document.getElementById('rz-stroke-size').value) || 1;
+            const strokeAlpha = parseFloat(document.getElementById('rz-stroke-alpha').value) || 1;
+            const animType = document.getElementById('rz-anim-type').value;
+            const animSpeed = parseFloat(document.getElementById('rz-anim-speed').value) || 1;
+            const animDir = document.getElementById('rz-anim-dir')?.value || 'clockwise';
+            const vecX = parseFloat(document.getElementById('rz-vec-fx')?.value) || 0;
+            const vecY = parseFloat(document.getElementById('rz-vec-fy')?.value) || 1;
+            const animRepeat = document.getElementById('rz-anim-repeat')?.value || 'infinity';
+
+            let style = '';
+            if (mode === 'solid') {
+                style = document.getElementById('rz-solid-color').value || '#717171';
+            } else {
+                let type = document.getElementById('rz-grad-type').value;
+                let rot = document.getElementById('rz-grad-rotation').value || 0;
+                let sortedStops = [...currentGradientStops].sort((a,b) => a.pos - b.pos);
+                let stopsStr = sortedStops.map(s => `${s.color} ${s.pos * 100}%`).join(', ');
+                
+                if (animRepeat === 'mirror') {
+                    let reversed = [...sortedStops].reverse().map(s => `${s.color} ${(1 - s.pos) * 100}%`).join(', ');
+                    stopsStr = stopsStr + ', ' + reversed;
+                } else if (animRepeat === 'repeat') {
+                    stopsStr = stopsStr + ', ' + stopsStr;
+                }
+
+                if (type === 'linear') style = `linear-gradient(${rot}deg, ${stopsStr})`;
+                else if (type === 'radial') style = `radial-gradient(circle, ${stopsStr})`;
+                else if (type === 'conical') style = `conic-gradient(from ${rot}deg at 50% 50%, ${stopsStr})`;
+                else if (type === 'elliptical') style = `radial-gradient(ellipse, ${stopsStr})`;
+            }
+
+            if (!name) { alert('Ingresa el nombre.'); return; }
+
+            const editIdx = parseInt(document.getElementById('rz-edit-index').value);
+            const rarityObj = { name, style, strokeColor, strokeSize, strokeAlpha, animType, animSpeed, animDir, vecX, vecY, animRepeat };
+
+            if (editIdx >= 0) db.rarities[editIdx] = rarityObj;
+            else db.rarities.push(rarityObj);
+
+            saveDB(db);
+            cancelEditRarity();
+            renderRaritiesList();
+            updateRaritySelect();
+        }
+
+        function startEditRarity(index) {
+            const isAdmin = db.currentUser ? (db.currentUser.username === "MrPhoenixWiki") : false;
+            if (!isAdmin) return;
+
+            const r = db.rarities[index];
+            document.getElementById('rz-edit-index').value = index;
+            document.getElementById('rz-name').value = r.name;
+            document.getElementById('rz-stroke-color').value = r.strokeColor || '#000000';
+            document.getElementById('rz-stroke-size').value = r.strokeSize || 1;
+            document.getElementById('rz-stroke-alpha').value = r.strokeAlpha !== undefined ? r.strokeAlpha : 1;
+            setAnimType(r.animType || 'none');
+            setAnimRepeat(r.animRepeat || 'infinity');
+            document.getElementById('rarity-form-title').innerText = 'Editar Rareza: ' + r.name;
+            document.getElementById('rz-cancel-btn').style.display = 'inline-block';
+
+            if (r.style.includes('gradient')) {
+                setRarityMode('gradient');
+                document.getElementById('rz-stop-color').value = r.style;
+            } else {
+                setRarityMode('solid');
+                document.getElementById('rz-solid-color').value = r.style;
+                document.getElementById('rz-solid-color').style.background = r.style;
+            }
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function cancelEditRarity() {
+            document.getElementById('rz-edit-index').value = -1;
+            document.getElementById('rz-name').value = '';
+            document.getElementById('rarity-form-title').innerText = 'Crear / Editar Rareza';
+            document.getElementById('rz-cancel-btn').style.display = 'none';
+            setAnimType('none');
+            setAnimRepeat('infinity');
+            setRarityMode('solid');
+            document.getElementById('rz-solid-color').value = '';
+            document.getElementById('rz-solid-color').style.background = '#fff';
+        }
+
+        function deleteRarity(index) {
+            if (confirm("¿Eliminar rareza?")) {
+                db.rarities.splice(index, 1);
+                saveDB(db);
+                renderRaritiesList();
+                updateRaritySelect();
+            }
+        }
+
+        function generateLinkHTML(url) {
+            if (!url) return '';
+            let domain = "enlace externo";
+            let favicon = "https://www.google.com/s2/favicons?domain=example.com&sz=32";
+            let title = url;
+            let thumbHtml = '';
+            try {
+                const parsedUrl = new URL(url);
+                domain = parsedUrl.hostname;
+                favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+                if (domain.includes('youtube.com') || domain.includes('youtu.be')) {
+                    title = "Video o Canal de YouTube";
+                    thumbHtml = `<img class="thumb" src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=120" alt="Portada">`;
+                } else { title = domain; }
+            } catch (e) {}
+            return `<a href="${url}" target="_blank" class="link-preview-card"><div class="link-header"><img src="${favicon}" alt="Favicon"><span>${domain}</span></div><div class="link-body">${thumbHtml}<div class="link-title">${title}</div></div></a>`;
+        }
+
+        function generateMediaHTML(mediaData, mediaType, bg360, uniqueId) {
+            if (!mediaData) return '';
+            if (mediaType && mediaType.startsWith('video')) {
+                return `<div class="media-container" id="media-box-${uniqueId}"><video src="${mediaData}" controls></video><button class="fullscreen-btn" onclick="toggleFullscreen('media-box-${uniqueId}')">Pantalla Completa</button></div>`;
+            } else if (mediaType && (mediaType.includes('gltf') || mediaType.includes('glb') || mediaData.includes('base64') && mediaData.includes('application/octet-stream'))) {
+                setTimeout(() => init3DViewer(`canvas-3d-${uniqueId}`, mediaData, bg360), 100);
+                return `<div class="media-container" id="media-box-${uniqueId}"><canvas id="canvas-3d-${uniqueId}"></canvas><button class="fullscreen-btn" onclick="toggleFullscreen('media-box-${uniqueId}')">Pantalla Completa</button></div>`;
+            } else {
+                return `<div class="media-container" id="media-box-${uniqueId}"><img src="${mediaData}" alt="Imagen"><button class="fullscreen-btn" onclick="toggleFullscreen('media-box-${uniqueId}')">Pantalla Completa</button></div>`;
+            }
+        }
+
+        function toggleFullscreen(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            if (!document.fullscreenElement) {
+                if (container.requestFullscreen) container.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        function init3DViewer(canvasId, modelData, bg360Data) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            if (threeInstances[canvasId]) {
+                cancelAnimationFrame(threeInstances[canvasId].animId);
+                threeInstances[canvasId].renderer.dispose();
+            }
+            const width = canvas.clientWidth || 280;
+            const height = canvas.clientHeight || 200;
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+            camera.position.set(0, 1.5, 4);
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            dirLight.position.set(5, 10, 7);
+            scene.add(dirLight);
+
+            if (bg360Data) {
+                new THREE.TextureLoader().load(bg360Data, (texture) => {
+                    const sphereGeo = new THREE.SphereGeometry(500, 60, 40);
+                    sphereGeo.scale(-1, 1, 1);
+                    scene.add(new THREE.Mesh(sphereGeo, new THREE.MeshBasicMaterial({ map: texture })));
+                });
+            } else { scene.background = new THREE.Color(0xf0f0f0); }
+
+            new THREE.GLTFLoader().parse(modelData, '', (gltf) => {
+                const model = gltf.scene;
+                const box = new THREE.Box3().setFromObject(model);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                model.scale.multiplyScalar(2 / Math.max(size.x, size.y, size.z));
+                model.position.sub(center);
+                scene.add(model);
+            });
+
+            function animate() {
+                const animId = requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+                threeInstances[canvasId] = { renderer, animId };
+            }
+            animate();
+        }
+
+        function renderSingleContent(sectionId) {
+            if (!db.singleContent[sectionId]) db.singleContent[sectionId] = { title: "Nuevo", text: "", media: null, mediaType: null, bg360: null, linkUrl: "" };
+            const item = db.singleContent[sectionId];
+            const container = document.getElementById(`single-display-${sectionId}`);
+            if (!container) return;
+            container.innerHTML = `<div class="post-card"><div class="post-left"><h3 style="margin-top:0;">${item.title}</h3><p style="white-space: pre-wrap;">${item.text}</p>${generateLinkHTML(item.linkUrl)}</div><div class="post-right">${generateMediaHTML(item.media, item.mediaType, item.bg360, `single-${sectionId}`)}</div></div>`;
+            document.getElementById(`single-title-${sectionId}`).value = item.title;
+            document.getElementById(`single-text-${sectionId}`).value = item.text;
+            document.getElementById(`single-link-${sectionId}`).value = item.linkUrl || '';
+            if (item.media) {
+                activeMediaData[sectionId] = { data: item.media, type: item.mediaType, name: 'Archivo actual', bg360: item.bg360 };
+                renderPreviewBoxCustom(sectionId);
+            }
+        }
+
+        function saveSingleContent(sectionId) {
+            const title = document.getElementById(`single-title-${sectionId}`).value;
+            const text = document.getElementById(`single-text-${sectionId}`).value;
+            const linkUrl = document.getElementById(`single-link-${sectionId}`).value;
+            if (!title || !text) { alert("Completa los campos."); return; }
+
+            let mediaData = db.singleContent[sectionId] ? db.singleContent[sectionId].media : null;
+            let mediaType = db.singleContent[sectionId] ? db.singleContent[sectionId].mediaType : null;
+            let bg360Data = db.singleContent[sectionId] ? db.singleContent[sectionId].bg360 : null;
+
+            if (activeMediaData[sectionId]) {
+                mediaData = activeMediaData[sectionId].data;
+                mediaType = activeMediaData[sectionId].type;
+                bg360Data = activeMediaData[sectionId].bg360 || null;
+            }
+
+            db.singleContent[sectionId] = { title, text, media: mediaData, mediaType: mediaType, bg360: bg360Data, linkUrl };
+            saveDB(db);
+            renderSingleContent(sectionId);
+            alert("Guardado correctamente!");
+        }
+
+        function toggleAddForm(rarityName) {
+            if (activeFormState.type === 'create' && activeFormState.rarity === rarityName) {
+                activeFormState = { type: null, rarity: null, editIndex: -1 };
+            } else {
+                activeFormState = { type: 'create', rarity: rarityName, editIndex: -1 };
+                activeMediaData['pajaros'] = null;
+            }
+            renderPajaros();
+        }
+
+        function toggleEditForm(index) {
+            if (activeFormState.type === 'edit' && activeFormState.editIndex === index) {
+                activeFormState = { type: null, rarity: null, editIndex: -1 };
+            } else {
+                activeFormState = { type: 'edit', rarity: null, editIndex: index };
+                const p = db.posts['pajaros'][index];
+                if (p && p.media) {
+                    activeMediaData['pajaros'] = { data: p.media, type: p.mediaType || 'image/png', name: 'Archivo actual', bg360: p.bg360 };
+                } else {
+                    activeMediaData['pajaros'] = null;
+                }
+            }
+            renderPajaros();
+        }
+
+        function renderDynamicPajaroForm(isEditing, targetRarity, editIndex) {
+            const isAdmin = db.currentUser ? (db.currentUser.username === "MrPhoenixWiki") : false;
+            if (!isAdmin) return '';
+
+            let pData = { title: '', money: '', text: '', linkUrl: '', rarity: targetRarity || (db.rarities[0] ? db.rarities[0].name : '') };
+            if (isEditing && editIndex >= 0) {
+                pData = db.posts['pajaros'][editIndex];
+            }
+
+            return `
+                <div class="admin-controls" style="margin-top: 15px; border: 2px solid #36c;">
+                    <h3>${isEditing ? 'Editar Pájaro' : 'Añadir Nuevo Pájaro en ' + targetRarity}</h3>
+                    <div class="form-group"><label>Nombre:</label><input type="text" id="dyn-pj-title" value="${pData.title}"></div>
+                    <div class="form-group"><label>Rareza:</label>
+                        <select id="dyn-pj-rarity">
+                            ${db.rarities.map(r => `<option value="${r.name}" ${pData.rarity === r.name ? 'selected' : ''}>${r.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Dinero por segundo ($/sec):</label><input type="text" id="dyn-pj-money" value="${pData.money || ''}"></div>
+                    <div class="form-group"><label>Información:</label><textarea id="dyn-pj-text" rows="4">${pData.text}</textarea></div>
+                    <div class="form-group"><label>Multimedia:</label><input type="file" id="pj-media-file" accept="image/*,video/*,.glb,.gltf" onchange="previewFileCustom('pajaros')"><div id="pj-preview-area"></div></div>
+                    <div class="form-group" id="pj-bg360-group" style="display:none;"><label>Fondo 360°:</label><input type="file" id="pj-bg360-file" accept="image/*" onchange="previewPajaroBg360()"><div id="pj-bg360-preview-area"></div></div>
+                    <div class="form-group"><label>Enlace Opcional:</label><input type="text" id="dyn-pj-link" value="${pData.linkUrl || ''}" placeholder="https://..."></div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="primary" onclick="saveDynamicPajaro(${isEditing ? editIndex : -1})">Guardar</button>
+                        <button onclick="activeFormState = {type: null, rarity: null, editIndex: -1}; renderPajaros();">Cancelar</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function saveDynamicPajaro(editIndex) {
+            const title = document.getElementById('dyn-pj-title').value;
+            const rarity = document.getElementById('dyn-pj-rarity').value;
+            const money = document.getElementById('dyn-pj-money').value;
+            const text = document.getElementById('dyn-pj-text').value;
+            const linkUrl = document.getElementById('dyn-pj-link').value;
+
+            if (!title || !money || !text) { alert('Completa los campos requeridos.'); return; }
+
+            let mediaData = editIndex >= 0 ? db.posts['pajaros'][editIndex].media : null;
+            let mediaType = editIndex >= 0 ? db.posts['pajaros'][editIndex].mediaType : null;
+            let bg360Data = editIndex >= 0 ? db.posts['pajaros'][editIndex].bg360 : null;
+
+            if (activeMediaData['pajaros']) {
+                mediaData = activeMediaData['pajaros'].data;
+                mediaType = activeMediaData['pajaros'].type;
+                bg360Data = activeMediaData['pajaros'].bg360 || null;
+            }
+
+            const pajaroObj = { title, rarity, money, text, linkUrl, media: mediaData, mediaType: mediaType, bg360: bg360Data };
+            if (editIndex >= 0) {
+                db.posts['pajaros'][editIndex] = pajaroObj;
+            } else {
+                if(!db.posts['pajaros']) db.posts['pajaros'] = [];
+                db.posts['pajaros'].push(pajaroObj);
+            }
+
+            saveDB(db);
+            activeFormState = { type: null, rarity: null, editIndex: -1 };
+            activeMediaData['pajaros'] = null;
+            renderPajaros();
+        }
+
+        function renderRarityCheckboxes() {
+            const container = document.getElementById('rarity-checkboxes-container');
+            if(!container) return;
+            container.innerHTML = db.rarities.map(r => {
+                let size = r.strokeSize || 1;
+                let strokeColor = r.strokeColor || '#000000';
+                let alpha = r.strokeAlpha !== undefined ? r.strokeAlpha : 1;
+                let rgb = hexToRgbStr(strokeColor);
+                let strokeCss = `text-shadow: ${size}px 0 rgba(${rgb}, ${alpha}), -${size}px 0 rgba(${rgb}, ${alpha}), 0 ${size}px rgba(${rgb}, ${alpha}), 0 -${size}px rgba(${rgb}, ${alpha});`;
+
+                return `
+                    <label class="rarity-filter-item">
+                        <input type="checkbox" ${activeRarityFilters[r.name] ? 'checked' : ''} onchange="toggleRarityFilter('${r.name}')">
+                        <span class="rarity-badge" style="background:${r.style}; color:#ffffff !important; ${strokeCss} font-size:0.75rem; padding:2px 6px;">${r.name}</span>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function renderPajaros() {
+            renderRarityCheckboxes();
+            const container = document.getElementById('posts-pajaros');
+            const searchVal = document.getElementById('search-pajaros')?.value.toLowerCase() || "";
+            const posts = db.posts['pajaros'] || [];
+
+            const filteredPosts = posts.filter(p => {
+                const matchesSearch = p.title.toLowerCase().includes(searchVal);
+                const matchesRarity = activeRarityFilters[p.rarity] !== false;
+                return matchesSearch && matchesRarity;
+            });
+
+            if (posts.length === 0 && activeFormState.type !== 'create') {
+                container.innerHTML = '<p style="color: #72777d; font-style: italic;">No hay pájaros creados todavía.</p>';
+                return;
+            }
+
+            let htmlOutput = '';
+            db.rarities.forEach((rObj) => {
+                let rPosts = filteredPosts.filter(p => p.rarity === rObj.name);
+
+                rPosts.sort((a, b) => {
+                    let valA = parseFloat(a.money) || 0;
+                    let valB = parseFloat(b.money) || 0;
+                    return valA - valB;
+                });
+
+                let isCollapsed = collapsedCategories[rObj.name] || false;
+                let size = rObj.strokeSize || 1;
+                let strokeColor = rObj.strokeColor || '#000000';
+                let alpha = rObj.strokeAlpha !== undefined ? rObj.strokeAlpha : 1;
+                let rgb = hexToRgbStr(strokeColor);
+                let strokeCss = `text-shadow: ${size}px 0 rgba(${rgb}, ${alpha}), -${size}px 0 rgba(${rgb}, ${alpha}), 0 ${size}px rgba(${rgb}, ${alpha}), 0 -${size}px rgba(${rgb}, ${alpha});`;
+
+                const isAdmin = db.currentUser ? (db.currentUser.username === "MrPhoenixWiki") : false;
+                let addBtnHtml = isAdmin ? `<button class="primary" style="font-size:0.75rem; padding:2px 6px;" onclick="event.stopPropagation(); toggleAddForm('${rObj.name}')">+ Añadir en ${rObj.name}</button>` : '';
+
+                let addFormHtml = (activeFormState.type === 'create' && activeFormState.rarity === rObj.name) ? renderDynamicPajaroForm(false, rObj.name, -1) : '';
+
+                htmlOutput += `
+                    <div class="rarity-category-group">
+                        <div class="rarity-category-header" style="background: ${rObj.style}; ${strokeCss}" onclick="toggleCategoryCollapse('${rObj.name}')">
+                            <span>${isCollapsed ? '▶' : '▼'} Rareza: ${rObj.name} (${rPosts.length} visibles)</span>
+                            ${addBtnHtml}
+                        </div>
+                        <div class="rarity-category-body ${isCollapsed ? 'collapsed' : ''}">
+                            ${rPosts.map(p => {
+                                let originalIdx = posts.indexOf(p);
+                                let cardHtml = renderPostCardHTML(p, 'pajaros', originalIdx);
+                                let editFormHtml = (activeFormState.type === 'edit' && activeFormState.editIndex === originalIdx) ? renderDynamicPajaroForm(true, rObj.name, originalIdx) : '';
+                                return cardHtml + editFormHtml;
+                            }).join('')}
+                            ${addFormHtml}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = htmlOutput;
+
+            if(activeFormState.type !== null) {
+                setTimeout(() => renderPreviewBoxCustom('pajaros'), 50);
+            }
+        }
+
+        function renderPostCardHTML(p, sectionId, index) {
+            const isAdmin = db.currentUser ? (db.currentUser.username === "MrPhoenixWiki") : false;
+            const rObj = sectionId === 'pajaros' ? db.rarities.find(r => r.name === p.rarity) : null;
+            let strokeCss = '';
+            if (rObj) {
+                let size = rObj.strokeSize || 1;
+                let strokeColor = rObj.strokeColor || '#000000';
+                let alpha = rObj.strokeAlpha !== undefined ? rObj.strokeAlpha : 1;
+                let rgb = hexToRgbStr(strokeColor);
+                strokeCss = `text-shadow: ${size}px 0 rgba(${rgb}, ${alpha}), -${size}px 0 rgba(${rgb}, ${alpha}), 0 ${size}px rgba(${rgb}, ${alpha}), 0 -${size}px rgba(${rgb}, ${alpha});`;
+            }
+            const styleAttr = rObj ? `background: ${rObj.style}; ${strokeCss}` : 'background: #333;';
+            const extraInfo = sectionId === 'pajaros' ? `<p><strong>Rareza:</strong> <span class="rarity-badge" style="${styleAttr}">${p.rarity}</span></p><p><strong>Dinero por seg:</strong> $${p.money}/sec</p>` : '';
+            
+            let adminButtons = isAdmin ? `<div style="margin-top: 15px; display: flex; gap: 10px;"><button onclick="toggleEditForm(${index})">Editar</button><button class="danger" onclick="deleteGenericPost('${sectionId}', ${index})">Eliminar</button></div>` : '';
+
+            return `<div class="post-card"><div class="post-left"><h3 style="margin-top:0;">${p.title}</h3>${extraInfo}<p style="white-space: pre-wrap;">${p.text}</p>${generateLinkHTML(p.linkUrl)}${adminButtons}</div><div class="post-right">${generateMediaHTML(p.media, p.mediaType, p.bg360, `${sectionId}-${index}`)}</div></div>`;
+        }
+
+        function deleteGenericPost(sectionId, index) {
+            if (confirm("¿Eliminar post?")) { 
+                db.posts[sectionId].splice(index, 1); 
+                saveDB(db); 
+                if(sectionId === 'pajaros') renderPajaros(); else renderGenericPosts(sectionId); 
+            }
+        }
+
+        window.onload = function() { initApp(); };
+    </script>
+</body>
+</html>
